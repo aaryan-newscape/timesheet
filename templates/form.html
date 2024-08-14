@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Time Log Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery and jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #4e54c8, #8f94fb);
+            color: #fff;
+        }
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 50px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        .task-list {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 200px;
+        }
+        .task-list label {
+            display: block;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .task-list label:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Employee Time Log and Task Log</h1>
+        <form method="POST" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="employee_name">Employee Name:</label>
+                <input type="text" class="form-control" id="employee_name" name="employee_name" required>
+            </div>
+            <div class="form-group">
+                <label for="project_name">Project Name:</label>
+                <input type="text" class="form-control" id="project_name" name="project_name" required>
+            </div>
+
+            <h2>Time Log</h2>
+            <table class="table table-bordered table-striped" id="time-log-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Regular Hours</th>
+                        <th>Holiday, PTO, OOO</th>
+                        <th>Total Hours</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(5) %}
+                    <tr>
+                        <td><input type="text" class="form-control datepicker" name="date" onchange="calculateTotals()" required></td>
+                        <td><input type="text" class="form-control" name="start_time" onchange="calculateTotals()" required></td>
+                        <td><input type="text" class="form-control" name="end_time" onchange="calculateTotals()" required></td>
+                        <td><input type="number" class="form-control regular-hours" name="regular_hours" value="0" min="0" onchange="calculateTotals()" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                        <td><input type="number" class="form-control holiday-hours" name="holiday_hours" value="0" min="0" onchange="calculateTotals()" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                        <td><input type="number" class="form-control" name="total_hours" readonly></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="3" class="text-right">WEEKLY TOTALS</td>
+                        <td><input type="number" class="form-control" id="total-regular-hours" readonly></td>
+                        <td><input type="number" class="form-control" id="total-holiday-hours" readonly></td>
+                        <td><input type="number" class="form-control" id="total-hours" readonly></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" id="add-row-button">Add Row</button>
+
+            <h2>Task Log</h2>
+            <table class="table table-bordered table-striped" id="task-log-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Task</th>
+                        <th>Details</th>
+                        <th>Hours</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(2) %}
+                    <tr>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="task" readonly required>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary select-task-button">Select Task</button>
+                                </div>
+                            </div>
+                            <div class="task-list">
+                                <label><input type="radio" name="task-option-{{i}}" value="ReferralCare"> ReferralCare</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="AAC AlayaCare"> AAC AlayaCare</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="ReThink"> ReThink</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Net Health"> Net Health</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Other meetings"> Other meetings</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Entity Integration"> Entity Integration</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Riskonnect"> Riskonnect</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Rethink"> Rethink</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="DIA Meetings"> DIA Meetings</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Employee Integration"> Employee Integration</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="AAC ALAYACARE"> AAC ALAYACARE</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="DIA Intgr"> DIA Intgr</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Revenue Integration"> Revenue Integration</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="Data Migration"> Data Migration</label>
+                                <label><input type="radio" name="task-option-{{i}}" value="MDMDIA"> MDMDIA</label>
+                                <label><input type="radio" name="task-option-{{i}}" value=""> <input type="text" class="form-control" placeholder="Enter Task"></label>
+                            </div>
+                        </td>
+                        <td><input type="text" class="form-control" name="detail" required></td>
+                        <td><input type="number" class="form-control" name="hours" min="0" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                        <td>
+                            <label><input type="radio" name="status-{{i}}" value="Completed"> Completed</label>
+                            <label><input type="radio" name="status-{{i}}" value="In Progress"> In Progress</label>
+                        </td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" id="add-task-row-button">Add Row</button>
+            <br><br>
+            <input type="submit" class="btn btn-success" value="Submit">
+        </form>
+    </div>
+
+    <!-- jQuery and jQuery UI JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $(".datepicker").datepicker({ dateFormat: 'mm/dd/yy' });
+
+            function getPreviousMonday(date) {
+                var day = date.getDay();
+                var diffToMonday = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+                return new Date(date.setDate(diffToMonday - 7));
+            }
+
+            function getMondayOfCurrentWeek(date) {
+                var day = date.getDay();
+                var diffToMonday = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+                return new Date(date.setDate(diffToMonday));
+            }
+
+            var today = new Date();
+            var currentTime = today.getHours();
+            var minDate, maxDate;
+
+            if (today.getDay() === 1 && currentTime < 12) { // Monday before 12 PM
+                minDate = getPreviousMonday(new Date());
+            } else {
+                minDate = getMondayOfCurrentWeek(new Date());
+            }
+
+            maxDate = new Date(minDate);
+            maxDate.setDate(minDate.getDate() + 6); // Show current week (Monday to Sunday)
+
+            $(".datepicker").datepicker("option", "minDate", minDate);
+            $(".datepicker").datepicker("option", "maxDate", maxDate);
+
+            $(document).on('click', '.select-task-button', function() {
+                var taskList = $(this).closest(".input-group").next(".task-list");
+                $(".task-list").not(taskList).hide(); // Hide other task lists
+                taskList.toggle();
+            });
+
+            $(document).on('click', '.task-list input', function() {
+                var selectedTask = $(this).val();
+                var taskInput = $(this).closest(".task-list").prev().find("input[name='task']");
+                taskInput.val(selectedTask);
+                $(this).closest(".task-list").hide();
+            });
+
+            $(document).click(function(event) {
+                if (!$(event.target).closest(".select-task-button, .task-list").length) {
+                    $(".task-list").hide();
+                }
+            });
+
+            $("#add-row-button").click(function() {
+                var rowCount = $("#time-log-table tbody tr").length - 1;
+                if (rowCount < 7) {
+                    var newRow = `
+                        <tr>
+                            <td><input type="text" class="form-control datepicker" name="date" onchange="calculateTotals()" required></td>
+                            <td><input type="text" class="form-control" name="start_time" onchange="calculateTotals()" required></td>
+                            <td><input type="text" class="form-control" name="end_time" onchange="calculateTotals()" required></td>
+                            <td><input type="number" class="form-control regular-hours" name="regular_hours" value="0" min="0" onchange="calculateTotals()" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                            <td><input type="number" class="form-control holiday-hours" name="holiday_hours" value="0" min="0" onchange="calculateTotals()" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                            <td><input type="number" class="form-control" name="total_hours" readonly></td>
+                            <td><button type="button" class="btn btn-danger delete-row-button">Delete</button></td>
+                        </tr>`;
+                    $("#time-log-table tbody tr:last").before(newRow);
+                    $(".datepicker").datepicker({ dateFormat: 'mm/dd/yy' });
+                }
+            });
+
+            $(document).on('click', '.delete-row-button', function() {
+                $(this).closest("tr").remove();
+                calculateTotals();
+            });
+
+            $("#add-task-row-button").click(function() {
+                var rowCount = $("#task-log-table tr").length - 1;
+                var newRow = `
+                    <tr>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="task" readonly required>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary select-task-button">Select Task</button>
+                                </div>
+                            </div>
+                            <div class="task-list">
+                                <label><input type="radio" name="task-option-${rowCount}" value="ReferralCare"> ReferralCare</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="AAC AlayaCare"> AAC AlayaCare</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="ReThink"> ReThink</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Net Health"> Net Health</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Other meetings"> Other meetings</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Entity Integration"> Entity Integration</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Riskonnect"> Riskonnect</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Rethink"> Rethink</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="DIA Meetings"> DIA Meetings</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Employee Integration"> Employee Integration</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="AAC ALAYACARE"> AAC ALAYACARE</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="DIA Intgr"> DIA Intgr</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Revenue Integration"> Revenue Integration</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="Data Migration"> Data Migration</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value="MDMDIA"> MDMDIA</label>
+                                <label><input type="radio" name="task-option-${rowCount}" value=""> <input type="text" class="form-control" placeholder="Enter Task"></label>
+                            </div>
+                        </td>
+                        <td><input type="text" class="form-control" name="detail" required></td>
+                        <td><input type="number" class="form-control" name="hours" min="0" step="1" oninput="this.value = Math.max(this.value, 0)" required></td>
+                        <td>
+                            <label><input type="radio" name="status-${rowCount}" value="Completed"> Completed</label>
+                            <label><input type="radio" name="status-${rowCount}" value="In Progress"> In Progress</label>
+                        </td>
+                        <td><button type="button" class="btn btn-danger delete-task-row-button">Delete</button></td>
+                    </tr>`;
+                $("#task-log-table tbody").append(newRow);
+            });
+
+            $(document).on('click', '.delete-task-row-button', function() {
+                $(this).closest("tr").remove();
+            });
+
+            // Validation for Regular Hours and Holiday Hours to allow only non-negative values
+            $(".regular-hours, .holiday-hours, input[name='hours']").on("input", function() {
+                if ($(this).val() < 0) {
+                    $(this).val(0);
+                }
+            });
+        });
+
+        function calculateTotals() {
+            var totalRegularHours = 0;
+            var totalHolidayHours = 0;
+            var totalHours = 0;
+            var taskLogTotalHours = 0;
+
+            $("#time-log-table tr").each(function() {
+                var regularHours = parseFloat($(this).find("input[name='regular_hours']").val()) || 0;
+                var holidayHours = parseFloat($(this).find("input[name='holiday_hours']").val()) || 0;
+                var total = regularHours + holidayHours;
+
+                totalRegularHours += regularHours;
+                totalHolidayHours += holidayHours;
+                totalHours += total;
+
+                $(this).find("input[name='total_hours']").val(total);
+            });
+
+            $("#task-log-table tr").each(function() {
+                var taskHours = parseFloat($(this).find("input[name='hours']").val()) || 0;
+                taskLogTotalHours += taskHours;
+            });
+
+            $("#total-regular-hours").val(totalRegularHours);
+            $("#total-holiday-hours").val(totalHolidayHours);
+            $("#total-hours").val(totalHours);
+
+            return {
+                totalRegularHours: totalRegularHours,
+                totalHolidayHours: totalHolidayHours,
+                totalHours: totalHours,
+                taskLogTotalHours: taskLogTotalHours
+            };
+        }
+
+        function validateForm() {
+            var totals = calculateTotals();
+            var totalRegularHours = totals.totalRegularHours;
+            var totalHolidayHours = totals.totalHolidayHours;
+            var totalHours = totals.totalHours;
+            var taskLogTotalHours = totals.taskLogTotalHours;
+
+            if (totalHours < 40) {
+                alert("The sum of Regular Hours and Holiday, PTO, OOO hours must be at least 40.");
+                return false;
+            }
+
+            if (totalRegularHours !== taskLogTotalHours) {
+                alert("The total hours in Task Log must match the total Regular Hours.");
+                return false;
+            }
+
+            // Check for empty fields in Time Log
+            var valid = true;
+            $("#time-log-table input[required]").each(function() {
+                if ($(this).val() === '') {
+                    valid = false;
+                    alert("Please fill all the fields in the Time Log table.");
+                    return false;
+                }
+            });
+
+            // Check for empty fields in Task Log
+            $("#task-log-table input[required]").each(function() {
+                if ($(this).val() === '') {
+                    valid = false;
+                    alert("Please fill all the fields in the Task Log table.");
+                    return false;
+                }
+            });
+
+            return valid;
+        }
+    </script>
+</body>
+</html>
